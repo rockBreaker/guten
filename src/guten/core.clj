@@ -1,8 +1,6 @@
 (ns guten.core
   (:require [opennlp.nlp :refer :all]))
 
-(def tokenize (make-tokenizer "resources/en-token.bin"))
-
 (def guten
   (slurp "resources/guten.txt"))
 
@@ -13,11 +11,24 @@
       (clojure.string/replace #"[\.,!?\(\)\[\]\_\-\=\:\"]" "")
       (clojure.string/replace #"\r|\n|[0-9]|" "")
       clojure.string/lower-case
-      (clojure.string/split #"\s+")))
+      ;;(clojure.string/split #"\s+")
+      ))
 
 (defn count-words 
-  [text-str]
-  (sort-by val > (frequencies (clean-text text-str))))
+  [text-coll]
+  (sort-by val > (frequencies text-coll)))
 
 
-;;lemmatisation
+;; Tokenization
+(def tokenize (make-tokenizer "resources/en-token.bin"))
+
+(def guten-token (tokenize guten))
+
+(defn get-tokens [coll-tokenized]
+  (filterv #(not (empty? %))
+           (map #(clean-text %) guten-token)))
+
+(def counts
+  (count-words (get-tokens guten-token)))
+
+;; Lemmatisation
